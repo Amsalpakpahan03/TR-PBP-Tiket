@@ -1,23 +1,32 @@
 <?php
 
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
+// === AUTH ===
+Route::prefix('auth')->group(function () {
+    Route::post('/login', fn() => Http::post('http://localhost:8001/api/auth/login', request()->all())->json());
+    Route::post('/register', fn() => Http::post('http://localhost:8001/api/auth/register', request()->all())->json());
+});
+Route::middleware('jwt')->prefix('tiket')->group(function () {
+    Route::post('/', fn() => Http::withToken(request()->bearerToken())
+        ->post('http://localhost:8003/api/tiket', request()->all())->json());
+});
 
-// === Tiket Service ===
-Route::middleware('jwt')->group(function () {
-    Route::get('/tiket', fn() => Http::withToken(session('jwt_token'))->get('http://localhost:8003/api/tiket')->json());
-    Route::get('/tiket/user/{id}', fn($id) => Http::withToken(session('jwt_token'))->get("http://localhost:8003/api/tiket/user/$id")->json());
-    Route::post('/tiket', fn() => Http::withToken(session('jwt_token'))->post("http://localhost:8003/api/tiket", request()->all())->json());
-    Route::delete('/tiket/{id}', fn($id) => Http::withToken(session('jwt_token'))->delete("http://localhost:8003/api/tiket/$id")->json());
+
+// === KERETA ===
+Route::prefix('kereta')->middleware('jwt')->group(function () {
+    Route::get('/', fn() => Http::withToken(request()->bearerToken())->get('http://localhost:8002/api/kereta')->json());
+    Route::post('/', fn() => Http::withToken(request()->bearerToken())->post('http://localhost:8002/api/kereta', request()->all())->json());
+    Route::put('/{id}', fn($id) => Http::withToken(request()->bearerToken())->put("http://localhost:8002/api/kereta/$id", request()->all())->json());
+    Route::delete('/{id}', fn($id) => Http::withToken(request()->bearerToken())->delete("http://localhost:8002/api/kereta/$id")->json());
+});
+
+// === TIKET ===
+Route::prefix('tiket')->middleware('jwt')->group(function () {
+    Route::get('/', fn() => Http::withToken(request()->bearerToken())->get('http://localhost:8003/api/tiket')->json());
+    Route::get('/user/{id}', fn($id) => Http::withToken(request()->bearerToken())->get("http://localhost:8003/api/tiket/user/$id")->json());
+    Route::post('/', fn() => Http::withToken(request()->bearerToken())->post('http://localhost:8003/api/tiket', request()->all())->json());
+    Route::delete('/{id}', fn($id) => Http::withToken(request()->bearerToken())->delete("http://localhost:8003/api/tiket/$id")->json());
 });

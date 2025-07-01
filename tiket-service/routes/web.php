@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\FrontendTiketController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+
+Route::get('/tiket/pesan', [FrontendTiketController::class, 'create'])->name('tiket.pesan');
+Route::post('/tiket/store', [FrontendTiketController::class, 'store'])->name('tiket.store');
+

@@ -1,0 +1,28 @@
+<label for="kursi">Pilih Kursi Tersedia:</label>
+<select id="kursi-dropdown">
+    <option>Loading...</option>
+</select>
+
+<script>
+    async function fetchKursiKosong(keretaId) {
+        const res = await fetch(`http://localhost:8001/api/kereta/${keretaId}/kursi-kosong`);
+        const data = await res.json();
+        const dropdown = document.getElementById('kursi-dropdown');
+        dropdown.innerHTML = '';
+
+        if (data.length === 0) {
+            dropdown.innerHTML = '<option>Tidak ada kursi tersedia</option>';
+            return;
+        }
+
+        data.forEach(kode => {
+            const option = document.createElement('option');
+            option.value = kode;
+            option.text = kode;
+            dropdown.appendChild(option);
+        });
+    }
+
+    // Contoh: Ambil kursi dari kereta dengan id = 1
+    fetchKursiKosong(1);
+</script>

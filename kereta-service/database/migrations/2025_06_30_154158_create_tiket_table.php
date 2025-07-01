@@ -12,15 +12,20 @@ return new class extends Migration {
      */
     public function up()
     {
-        Schema::create('kursi', function (Blueprint $table) {
+        Schema::create('tiket', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('kereta_id');
-            $table->integer('jumlah');
-            $table->foreign('kereta_id')->references('id')->on('kereta')->onDelete('cascade');
+            $table->string('asal');
+            $table->string('tujuan');
+            $table->date('tanggal');
+            $table->integer('harga');
+            $table->string('kursi')->nullable();
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
-    }
 
+    }
 
     /**
      * Reverse the migrations.
@@ -29,6 +34,6 @@ return new class extends Migration {
      */
     public function down()
     {
-        Schema::dropIfExists('kursis');
+        Schema::dropIfExists('tiket');
     }
 };

@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Tiket extends Model
+class KursiDetail extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'user_id',
         'kereta_id',
-        'asal',
-        'tujuan',
-        'tanggal',
-        'harga',
-        'kursi',
+        'kode',
         'status'
     ];
 
+    public function kereta()
+    {
+        return $this->belongsTo(Kereta::class);
+    }
 }

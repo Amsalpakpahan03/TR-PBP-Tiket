@@ -38,7 +38,7 @@ class TiketController extends Controller
                 'kursi' => 'required|string'
             ]);
 
-            // Cek duplikat kursi
+            // Cek apakah kursi sudah pernah dipesan
             $duplikat = Tiket::where('kereta_id', $data['kereta_id'])
                 ->where('kursi', $data['kursi'])
                 ->whereIn('status', ['pending', 'sukses'])
@@ -48,7 +48,7 @@ class TiketController extends Controller
                 return response()->json(['message' => 'Kursi sudah dipesan oleh pengguna lain'], 400);
             }
 
-            // Cek kursi ke kereta-service
+            // Cek kursi tersedia dari kereta-service
             $res = Http::get("http://localhost:8002/api/kursi-detail/cek", [
                 'kereta_id' => $data['kereta_id'],
                 'kode' => $data['kursi']
@@ -58,7 +58,7 @@ class TiketController extends Controller
                 return response()->json(['message' => 'Kursi tidak tersedia'], 400);
             }
 
-            // Simpan tiket pending
+            // Simpan tiket baru
             $tiket = Tiket::create([
                 'user_id' => $userId,
                 'kereta_id' => $data['kereta_id'],
@@ -84,33 +84,23 @@ class TiketController extends Controller
 
     public function bayar($id)
     {
-        $tiket = Tiket::findOrFail($id);
+        try {
+            $tiket = Tiket::findOrFail($id);
 
-        if ($tiket->status === 'sukses') {
-            return response()->json(['message' => 'Tiket sudah dibayar'], 400);
+            if ($tiket->status === 'sukses') {
+                return response()->json(['message' => 'Tiket sudah dibayar'], 400);
+            }
+
+            $tiket->status = 'sukses';
+            $tiket->save();
+
+            return response()->json(['message' => 'Tiket berhasil dibayar', 'data' => $tiket]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal membayar tiket',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Cek kursi ulang ke kereta-service
-        $cek = Http::get("http://localhost:8002/api/kursi-detail/cek", [
-            'kereta_id' => $tiket->kereta_id,
-            'kode' => $tiket->kursi
-        ]);
-
-        if (!$cek->ok() || !$cek['tersedia']) {
-            return response()->json(['message' => 'Kursi sudah digunakan orang lain'], 400);
-        }
-
-        // Tandai terpakai di kereta-service
-        $res = Http::put("http://localhost:8002/api/kursi-detail/{$tiket->kereta_id}/{$tiket->kursi}/pakai");
-
-        if ($res->status() !== 200) {
-            return response()->json(['message' => 'Gagal bayar, kursi tidak tersedia'], 400);
-        }
-
-        $tiket->status = 'sukses';
-        $tiket->save();
-
-        return response()->json(['message' => 'Pembayaran berhasil', 'tiket' => $tiket]);
     }
 
     public function destroy($id)
@@ -123,7 +113,7 @@ class TiketController extends Controller
     {
         try {
             $userId = $request->user_id;
-            $status = $request->query('status'); // ambil dari URL query
+            $status = $request->query('status'); // bisa pakai query ?status=pending/sukses
 
             $query = Tiket::where('user_id', $userId);
 
@@ -144,5 +134,4 @@ class TiketController extends Controller
             ], 500);
         }
     }
-
 }

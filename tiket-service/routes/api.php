@@ -4,21 +4,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TiketController;
 
-// Public access (misal: admin frontend atau monitoring)
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES (tanpa login)
+|--------------------------------------------------------------------------
+*/
 Route::get('/tiket', [TiketController::class, 'index']);
 Route::get('/tiket/user/{id}', [TiketController::class, 'userTiket']);
 
-// // Butuh login (JWT)
-// Route::middleware('jwt')->group(function () {
-//     Route::post('/tiket', [TiketController::class, 'store']);
-//     Route::put('/tiket/{id}/bayar', [TiketController::class, 'bayar']);
-//     Route::delete('/tiket/{id}', [TiketController::class, 'destroy']);
-// });
-Route::middleware('jwt')->get('/tiket/riwayat', [TiketController::class, 'riwayatUser']);
-
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ROUTES (butuh JWT login)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('jwt')->group(function () {
-    Route::get('/tiket', [TiketController::class, 'index']);
-    Route::get('/tiket/user/{id}', [TiketController::class, 'userTiket']);
+    Route::get('/tiket/riwayat', [TiketController::class, 'riwayatUser']);
     Route::post('/tiket', [TiketController::class, 'store']);
     Route::put('/tiket/{id}/bayar', [TiketController::class, 'bayar']);
     Route::delete('/tiket/{id}', [TiketController::class, 'destroy']);

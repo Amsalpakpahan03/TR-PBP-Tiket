@@ -2,15 +2,28 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Kursi extends Model
 {
-    protected $table = 'kursi'; // WAJIB!
-    protected $fillable = ['kereta_id', 'jumlah'];
+    use HasFactory;
 
-    public function kereta()
-    {
-        return $this->belongsTo(Kereta::class, 'kereta_id');
-    }
+    // Nama tabel di database (jika tidak sesuai konvensi Laravel)
+    protected $table = 'kursi'; // atau 'kursis' jika kamu pakai default migration
+
+    // Kolom yang bisa diisi
+    protected $fillable = [
+        'kereta_id',
+        'kode',
+        'terpakai',
+    ];
+
+    // Cast kolom 'terpakai' ke boolean
+    protected $casts = [
+        'terpakai' => 'boolean',
+    ];
+
+    // Matikan timestamps kalau tidak pakai created_at / updated_at
+    public $timestamps = false;
 }

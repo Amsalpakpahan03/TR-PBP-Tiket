@@ -30,3 +30,16 @@ Route::prefix('tiket')->middleware('jwt')->group(function () {
     Route::post('/', fn() => Http::withToken(request()->bearerToken())->post('http://localhost:8003/api/tiket', request()->all())->json());
     Route::delete('/{id}', fn($id) => Http::withToken(request()->bearerToken())->delete("http://localhost:8003/api/tiket/$id")->json());
 });
+
+// === Kursi (Proxy dari gateway ke kereta-service) ===
+Route::get('/kursi-detail/cek', function () {
+    $keretaId = request('kereta_id');
+    $kode = request('kode');
+
+    $response = Http::get('http://localhost:8002/api/kursi-detail/cek', [
+        'kereta_id' => $keretaId,
+        'kode' => $kode
+    ]);
+
+    return response($response->body(), $response->status());
+});

@@ -15,7 +15,6 @@ class KeretaController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'nama' => 'required|string',
             'kelas' => 'required|string',
@@ -26,13 +25,11 @@ class KeretaController extends Controller
             'ketersediaan' => 'required|integer|min:1'
         ]);
 
-        // Buat list nomor kursi
         $nomor_kursi = [];
         for ($i = 1; $i <= $request->ketersediaan; $i++) {
             $nomor_kursi[] = "A$i";
         }
 
-        // Simpan kereta
         $kereta = Kereta::create([
             'nama' => $request->nama,
             'kelas' => $request->kelas,
@@ -44,7 +41,6 @@ class KeretaController extends Controller
             'ketersediaan' => $request->ketersediaan
         ]);
 
-        // Simpan kursi detail ke DB
         foreach ($nomor_kursi as $kode) {
             KursiDetail::create([
                 'kereta_id' => $kereta->id,
@@ -80,33 +76,44 @@ class KeretaController extends Controller
 
     public function cekKursi(Request $request)
     {
-        $request->validate([
-            'kereta_id' => 'required|integer',
-            'kode' => 'required|string'
-        ]);
+        $keretaId = $request->kereta_id;
+        $kode = $request->kode;
 
-        $kursi = KursiDetail::where('kereta_id', $request->kereta_id)
-            ->where('kode', $request->kode)
+        $kursi = KursiDetail::where('kereta_id', $keretaId)
+            ->where('kode', $kode)
             ->first();
 
-        return response()->json([
-            'tersedia' => $kursi && $kursi->status === 'kosong'
-        ]);
+        if (!$kursi) {
+            return response()->json(['tersedia' => false, 'message' => 'Kursi tidak ditemukan'], 404);
+        }
+
+        return response()->json(['tersedia' => $kursi->status === 'kosong']);
     }
 
     public function tandaiTerpakai($kereta_id, $kode)
     {
-        $kursi = KursiDetail::where('kereta_id', $kereta_id)
-            ->where('kode', $kode)
-            ->first();
+        try {
+            $kursi = KursiDetail::where('kereta_id', $kereta_id)
+                ->where('kode', $kode)
+                ->first();
 
-        if (!$kursi || $kursi->status === 'terisi') {
-            return response()->json(['message' => 'Kursi tidak tersedia'], 400);
+            if (!$kursi) {
+                return response()->json(['message' => 'Kursi tidak ditemukan'], 404);
+            }
+
+            if ($kursi->status === 'terpakai') {
+                return response()->json(['message' => 'Kursi sudah dipakai'], 400);
+            }
+
+            $kursi->status = 'terpakai';
+            $kursi->save();
+
+            return response()->json(['message' => 'Kursi berhasil ditandai sebagai terpakai'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menandai kursi',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $kursi->status = 'terisi';
-        $kursi->save();
-
-        return response()->json(['message' => 'Kursi berhasil ditandai sebagai terisi']);
     }
 }

@@ -11,10 +11,11 @@ class CreateKursiDetailsTable extends Migration
         Schema::create('kursi_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('kereta_id')->constrained('keretas')->onDelete('cascade');
-            $table->string('kode'); // contoh: A1, A2, dll
-            $table->enum('status', ['kosong', 'terisi'])->default('kosong');
+            $table->string('kode'); // A1, A2, dst
+            $table->string('status'); // 'kosong' atau 'terpakai'
             $table->timestamps();
         });
+
     }
 
     public function down()

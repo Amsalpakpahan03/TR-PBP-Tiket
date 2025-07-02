@@ -13,6 +13,7 @@ use App\Http\Controllers\KeretaController;
 */
 
 // === ROUTE TERKAIT KERETA === //
+Route::get('/kereta/{id}', [KeretaController::class, 'show']);
 Route::get('/kereta', [KeretaController::class, 'index']);
 Route::post('/kereta', [KeretaController::class, 'store']);
 Route::put('/kereta/{id}', [KeretaController::class, 'update']);

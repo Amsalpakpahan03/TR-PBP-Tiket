@@ -5,14 +5,13 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up()
+    public function up(): void
     {
         Schema::create('tikets', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('kereta_id');
-            $table->string('asal');
-            $table->string('tujuan');
+            $table->string('jurusan'); 
             $table->date('tanggal');
             $table->decimal('harga', 10, 2);
             $table->string('kursi');
@@ -21,9 +20,8 @@ return new class extends Migration {
         });
     }
 
-
     public function down(): void
     {
-        Schema::dropIfExists('tiket');
+        Schema::dropIfExists('tikets');
     }
 };

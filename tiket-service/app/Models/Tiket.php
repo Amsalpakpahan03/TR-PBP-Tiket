@@ -7,16 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tiket extends Model
 {
-    use HasFactory;
     protected $fillable = [
         'user_id',
         'kereta_id',
-        'asal',
-        'tujuan',
+        'jurusan',
         'tanggal',
         'harga',
         'kursi',
         'status'
     ];
-
 }

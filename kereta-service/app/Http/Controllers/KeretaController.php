@@ -116,4 +116,15 @@ class KeretaController extends Controller
             ], 500);
         }
     }
+    public function show($id)
+    {
+        $kereta = \App\Models\Kereta::find($id);
+
+        if (!$kereta) {
+            return response()->json(['message' => 'Kereta tidak ditemukan'], 404);
+        }
+
+        return response()->json($kereta);
+    }
+
 }

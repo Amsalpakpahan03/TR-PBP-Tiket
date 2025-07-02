@@ -6,33 +6,35 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'name'     => 'required|string',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6',
         ]);
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['role'] = $request->input('role', 'user'); // default: user
 
-
-        $validated['password'] = Hash::make($validated['password']);
+        $validated['password'] = Hash::make($validated['password']); // ✅ manual hash
+        $validated['role'] = $request->input('role', 'user');
 
         $user = User::create($validated);
 
         return response()->json([
             'message' => 'Registrasi berhasil',
-            'user' => $user
+            'user' => $user,
         ], 201);
     }
 
     public function login(Request $request)
     {
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
+
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -40,17 +42,18 @@ class AuthController extends Controller
         }
 
         $payload = [
-            'sub' => $user->id,
+            'sub'   => $user->id,
             'email' => $user->email,
-            'iat' => time(),
-            'exp' => time() + (60 * 60) // token berlaku 1 jam
+            'role'  => $user->role,
+            'iat'   => time(),
+            'exp'   => time() + (60 * 60), // 1 jam
         ];
 
         $token = JWT::encode($payload, env('JWT_SECRET'), 'HS256');
 
         return response()->json([
             'message' => 'Login berhasil',
-            'token' => $token
+            'token' => $token,
         ]);
     }
 
@@ -67,9 +70,6 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // Di JWT, logout hanya menghapus token di sisi client
-        return response()->json([
-            'message' => 'Logout berhasil. Hapus token di client.'
-        ]);
+        return response()->json(['message' => 'Logout berhasil. Hapus token di client.']);
     }
 }

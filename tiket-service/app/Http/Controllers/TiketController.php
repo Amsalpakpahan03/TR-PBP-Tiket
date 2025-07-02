@@ -120,29 +120,29 @@ class TiketController extends Controller
     }
 
     public function riwayatUser(Request $request)
-{
-    try {
-        $userId = $request->user_id;
-        $status = $request->query('status'); // ambil dari URL query
+    {
+        try {
+            $userId = $request->user_id;
+            $status = $request->query('status'); // ambil dari URL query
 
-        $query = Tiket::where('user_id', $userId);
+            $query = Tiket::where('user_id', $userId);
 
-        if ($status) {
-            $query->where('status', $status);
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            $riwayat = $query->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'message' => 'Riwayat tiket berhasil diambil',
+                'data' => $riwayat
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Gagal mengambil riwayat tiket',
+                'detail' => $e->getMessage()
+            ], 500);
         }
-
-        $riwayat = $query->orderBy('created_at', 'desc')->get();
-
-        return response()->json([
-            'message' => 'Riwayat tiket berhasil diambil',
-            'data' => $riwayat
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Gagal mengambil riwayat tiket',
-            'detail' => $e->getMessage()
-        ], 500);
     }
-}
 
 }

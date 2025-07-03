@@ -75,7 +75,7 @@ class TiketController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Tiket berhasil dipesan (pending)',
+                'message' => 'Tiket berhasil dipesan (pendding) Lakukan Pembayaran Ke My Ticket ',
                 'tiket' => $tiket
             ]);
 

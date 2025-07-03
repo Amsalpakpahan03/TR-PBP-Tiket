@@ -12,8 +12,8 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required|string',
-            'email'    => 'required|email|unique:users',
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
         ]);
 
@@ -31,7 +31,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
@@ -42,11 +42,11 @@ class AuthController extends Controller
         }
 
         $payload = [
-            'sub'   => $user->id,
+            'sub' => $user->id,
             'email' => $user->email,
-            'role'  => $user->role,
-            'iat'   => time(),
-            'exp'   => time() + (60 * 60), // 1 jam
+            'role' => $user->role,
+            'iat' => time(),
+            'exp' => time() + (60 * 60), // 1 jam
         ];
 
         $token = JWT::encode($payload, env('JWT_SECRET'), 'HS256');
@@ -59,13 +59,37 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        $user = User::find($request->user_id);
+        // Ambil token dari header Authorization
+        $token = $request->bearerToken();
 
-        if (!$user) {
-            return response()->json(['message' => 'User tidak ditemukan'], 404);
+        if (!$token) {
+            return response()->json(['message' => 'Token tidak ditemukan'], 401);
         }
 
-        return response()->json($user);
+        try {
+            // Dekode token untuk mendapatkan payload
+            $decoded = JWT::decode($token, env('JWT_SECRET'), ['HS256']);
+
+            // Ambil user ID dari token
+            $userId = $decoded->sub;
+
+            // Ambil data user berdasarkan ID
+            $user = User::find($userId);
+
+            if (!$user) {
+                return response()->json(['message' => 'User tidak ditemukan'], 404);
+            }
+
+            // Kembalikan data user (misalnya nama dan email)
+            return response()->json([
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+        } catch (\Exception $e) {
+            // Log error jika token tidak valid
+            \Log::error('Token decoding error: ' . $e->getMessage());
+            return response()->json(['message' => 'Token tidak valid'], 401);
+        }
     }
 
     public function logout(Request $request)
